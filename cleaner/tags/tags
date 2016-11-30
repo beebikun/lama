@@ -1,0 +1,50 @@
+{MEASURE}
+
+{AREA}
+km2 sqm m2 sqft sqcm cm2 sqin sqmm mm2 ha sqmi acre sqyd sqfoot sqnmi sqkm acres
+{DENSITY}
+kg/m3 g/m3 lb/ft3 lb/yd3
+{ENERGY}
+GJ MJ kJ hJ daJ J dJ cJ uJ nJ Merg kerg erg
+TWh TW.h GWh GW.h MWh MW.h kWh kW.h Wh W.h
+GeV MeV keV eV
+kcal cal mcal
+ftpdl ftlbf ftlb-f inlbf inlb-f inlb-f inozf inoz-f hph
+Btu GtTNT GtonTNT MtTNT MtonTNT ktTNT ktonTNT tTNT tonTNT
+Eh Ry toe BOE
+latm impgalatm USgalatm U.S.galatm
+{POWER}
+GN MN kN N uN nN
+Mdyn kdyn dyn
+t-f tf kg-f kgf g-f gf mg-f mgf pdl LTf LT-f ST-f STf lb-f lbf gr-f grf
+long ton-force short ton-force
+{LENGTH}
+mm km m cm um nm a mi furlong chain rd fathom yd ft in nmi pc ly au
+{MASS}
+kg g ug mg t mt lt long ton st short ton st lb oz drachm dram gr ozt carat
+{SPEED}
+m/s km/h mph ft/s kn km/hour mi/h
+{TEMPERTURE}
+k c r f
+{TORQUE}
+Nm kg.m lb.ft
+N.m kgf.m lbf.ft
+{VOLUME}
+m3 cm3 cc mm3
+kl l cl ml litres litre
+cuyd cuft cuin
+impbbl impbsh impbu impgal impqt imppt impoz impfloz
+USbbl U.S.bbl barrel oilbbl bbl bbl gal USqt qt U.S.qt USpt pt U.S.pt USoz U.S.oz ozUSfloz U.S.floz
+USdrybbl U.S.drybbl drybbl USbsh U.S.bsh bsh USbu U.S.bu bu USdrygal U.S.drygal drygal
+USdryqt U.S.dryqt dryqt USdrypt U.S.drypt drypt
+{PRESSURE}
+GPa MPa kPa hpa pa mbar mb dbar bar kba ba atm torr mmHg inHg psi
+{FUEL_EFFICIENCY}
+km/l l/100 km l/km mpgimp mpgus mpgU.S. impgal/mi usgal/mi U.S.gal/mi bbl/d barrel per day
+{POPULATION_DENSITY}
+PD/sqkm /sqkm PD/ha /ha PD/sqmi /sqmi PD/acre /acre
+{COST_PER_UNIT_MASS}
+$/lb $/kg $/ozt
+
+UNKNOWN
+mpge+kWh/| MJ/km USgal/mi| mi/hour| kW\xc2\xb7h| g/mi| Gcuft| kJ/km mpge| C-change| gal| kWh/km| Wh/mile| fathom| Moilbbl/d| Moilbbl| BTU| g| USgal| quad| kn| kJ/kg| metric ton| ftin| ozt| BTU/lb| \xc2\xb0F| t| PJ| g/km| Goilbbl| BTU/mi| hp| \xc2\xb0C| \xe2\x80\x93|
