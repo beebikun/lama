@@ -163,7 +163,7 @@ class Storage():
         if concat:
             write(file_path, text, 'sl')
         if ext:
-            print 'Write file {}'.format(file_path)
+            print('Write file {}'.format(file_path))
         return file_path
 
     def write_pickle(self, data, name='all', ftype=None, ext=''):
