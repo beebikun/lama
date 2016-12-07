@@ -74,7 +74,7 @@ class Cleaner(object):
         d1 = datetime.datetime.now()
         for pattern, tag in self.TAGS.iteritems():
             text, n = pattern.subn(tag, text)
-            print 'Insert {} tags for pattern {}'.format(n, tag)
+            print('Insert {} tags for pattern {}'.format(n, tag))
         d2 = datetime.datetime.now()
         print('Insert tags: {} sec'.format((d2 - d1).seconds))
         return text
