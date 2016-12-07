@@ -49,7 +49,6 @@ BADS_SYMBOLS = {
     # '(R)': ['®', '&reg;', '&#174;', '&#xae;'],
     # '(TM)': ['™', '&trade;', '&#8482;', '&#153;'],
     # '+/-': ['±', '&plusmn;', '&#177;', '&#xb1;'],
-    
     '}': ['&#125;', ],
     '"': ['«', '&laquo;', '&#171;', '&#xab;',
           '»', '&raquo;', '&#187;', '&#xbb;',
@@ -122,7 +121,6 @@ BADS_SYMBOLS = {
           '≡', '&equiv;', '&#8801;', '&#x2261;',
           '≤', '&le;', '&#8804;', '&#x2264;',
           '≥', '&ge;', '&#8805;', '&#x2265;', ],
-    
     '\[': ['&#91;', '&#x5b;', '&#x005B;', ],
     '\]': ['&#93;', '&#x5d;', ],
     # '\\': ['\&#92;'],
@@ -305,6 +303,11 @@ BADS_SYMBOLS = {
 for normal in BADS_SYMBOLS:
     bads = '|'.join(BADS_SYMBOLS[normal])
     BADS_SYMBOLS[normal] = re.compile(bads, flags=re.I)
+
+
+for normal in BADS_SYMBOLS_A:
+    bads = '|'.join(BADS_SYMBOLS_A[normal])
+    BADS_SYMBOLS_A[normal] = re.compile(bads, flags=re.I)
 
 
 TAGS = {
