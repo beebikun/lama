@@ -136,7 +136,7 @@ class Cleaner(object):
             d2 = datetime.datetime.now()
             spent = (d2 - d1).seconds
             time_per_file = round(spent / float(i), 2)
-            remining_time = time_per_file * (l - i)
+            remining_time = round(time_per_file * (l - i), 2)
             percent = round(i * 100.0 / l, 3)
             stdout.write('\r{} %\t\tTime per file:{} sec\t\tRemining time: {} sec  '.format(
                 percent, time_per_file, remining_time))
