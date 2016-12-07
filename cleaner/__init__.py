@@ -161,8 +161,8 @@ class Cleaner(object):
             stdout.flush()
 
         if self.N:
-            self.START = self.N
-            self.END = self.N + 1
+            self.START = int(self.N)
+            self.END = self.START + 1
         files = self.SOURCE_STORAGE.files()
         end = self.END or len(files)
         l = end - self.START
