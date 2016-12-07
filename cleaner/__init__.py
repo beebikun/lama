@@ -34,7 +34,7 @@ class Cleaner(object):
         # self.items = self.lama.db_items.find_all({'type': self.TYPE})
 
     def remove_bads(self, text):
-        for normal, regex in BADS_SYMBOLS.iteritems():  # replace bad symbols
+        for normal, regex in BADS_SYMBOLS.items():  # replace bad symbols
             text = regex.sub(normal, text)
 
         entity_reg = re.compile('&#\w+;')
