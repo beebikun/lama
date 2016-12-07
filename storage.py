@@ -1,24 +1,21 @@
 from subprocess import Popen, PIPE
-from docx import opendocx, getdocumenttext
-from openpyxl import load_workbook
+
 import pickle
 import datetime
 import os
 import re
-import xlrd
 
-#http://stackoverflow.com/questions/5725278/python-help-using-pdfminer-as-a-library
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdfminer.converter import TextConverter
-from pdfminer.layout import LAParams
-from pdfminer.pdfpage import PDFPage
-from cStringIO import StringIO
 
 # http://macappstore.org/antiword/
 DATE_FORMAT = '%d%m%y-%H%M'
 
 
 def convert_pdf_to_txt(path):
+    from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+    from pdfminer.converter import TextConverter
+    from pdfminer.layout import LAParams
+    from pdfminer.pdfpage import PDFPage
+    from cStringIO import StringIO
     rsrcmgr = PDFResourceManager()
     retstr = StringIO()
     codec = 'utf-8'
@@ -42,6 +39,8 @@ def convert_pdf_to_txt(path):
 
 
 def convert_xls_to_txt(file_path, ext):
+    import xlrd
+    from openpyxl import load_workbook
     if ext == 'xls':
         wb = xlrd.open_workbook(file_path)
         sheets = wb.sheets()
@@ -73,6 +72,16 @@ def convert_xls_to_txt(file_path, ext):
     return '--sheet--\n'.join(data)
 
 
+def convert_doc_to_txt(file_path):
+    from docx import opendocx, getdocumenttext
+    document = opendocx(file_path)
+    paratextlist = getdocumenttext(document)
+    newparatextlist = []
+    for paratext in paratextlist:
+        newparatextlist.append(paratext.encode("utf-8"))
+    return '\n\n'.join(newparatextlist)
+
+
 def read_file(filename, file_path):
     # http://davidmburke.com/2014/02/04/python-convert-documents-doc-docx-odt-pdf-to-plain-text-without-libreoffice/
     ext = filename.split('.')[-1]
@@ -84,12 +93,7 @@ def read_file(filename, file_path):
         stdout, stderr = p.communicate()
         return stdout.decode('ascii', 'ignore')
     elif ext == "docx":
-        document = opendocx(file_path)
-        paratextlist = getdocumenttext(document)
-        newparatextlist = []
-        for paratext in paratextlist:
-            newparatextlist.append(paratext.encode("utf-8"))
-        return '\n\n'.join(newparatextlist)
+        return convert_doc_to_txt(file_path)
     elif ext == "odt":
         cmd = ['odt2txt', file_path]
         p = Popen(cmd, stdout=PIPE)
