@@ -63,7 +63,7 @@ class WikiLich(Lich):
             page['text'] = text
             self.write(page)
             self.done_dbelement(page['pageid'])
-        print '{} pages have been downloaded'.format(len(page_ids))
+        print('{} pages have been downloaded'.format(len(page_ids)))
 
     def download_category(self, pageid=None, title=None, path='', db_item=None, n=1):
         if n > self.N:
@@ -71,22 +71,22 @@ class WikiLich(Lich):
         self.add_path(path, title)
         if db_item and db_item.get('done') or self.check_is_done(pageid, title):
             return
-        print '================='
-        print 'Start getting pages for "{}"'.format(title)
-        print n
-        print path
+        print('=================')
+        print('Start getting pages for "{}"'.format(title))
+        print(n)
+        print(path)
         url = subcat_and_pages_url.format(title)
         data = self.get_json(url)
         try:
             children = data['query']['categorymembers']
         except Exception, e:
-            print url
-            print data
-            raise e
+            print(url)
+            print(data)
+            raise(e)
         if len(children) == 0:
             self.done_dbelement(pageid=pageid, title=title)
-            print 'Empty category {}'.format(title)
-            print '--->Nothing to download in category "{}"'.format(title)
+            print('Empty category {}'.format(title))
+            print('--->Nothing to download in category "{}"'.format(title))
             return
         # self.db_items.items.insert_many(children)
         page_ids = []
@@ -98,22 +98,22 @@ class WikiLich(Lich):
                 if parents.count(ch['title']) == 0:
                     subcats.append((ch, db_item))
                 else:
-                    print '( CYCLE IN PATH )'
+                    print('( CYCLE IN PATH )')
             elif not db_item.get('done'):
                 page_ids.append(str(ch['pageid']))
         if len(page_ids) != 0:
             self.save_pages(page_ids)
-            print 'Save all pages for "{}"'.format(title)
+            print('Save all pages for "{}"'.format(title))
         else:
-            print '--->No new pages in category "{}"'.format(title)
+            print('--->No new pages in category "{}"'.format(title))
 
-        print 'Category "{}" has {} subcategories'.format(title, len(subcats))
+        print('Category "{}" has {} subcategories'.format(title, len(subcats)))
         for cat, db_item in subcats:
             self.download_category(cat['pageid'], cat['title'].encode('utf8'),
                                    path + '/' + title, db_item, n + 1)
 
         self.done_dbelement(pageid=pageid, title=title)
-        print 'Category {} is done'.format(title)
+        print('Category {} is done'.format(title))
 
     def run(self):
         for title in root_categories:
