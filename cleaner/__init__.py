@@ -67,7 +67,7 @@ class Cleaner(object):
         # A&M is better than A & M
         text = text.replace(' &', '&').replace('& ', '&')
         d2 = datetime.datetime.now()
-        print 'Strip: {} sec'.format((d2 - d1).seconds)
+        print('Strip: {} sec'.format((d2 - d1).seconds))
         return text.strip()
 
     def insert_tags(self, text):
@@ -76,7 +76,7 @@ class Cleaner(object):
             text, n = pattern.subn(tag, text)
             print 'Insert {} tags for pattern {}'.format(n, tag)
         d2 = datetime.datetime.now()
-        print 'Insert tags: {} sec'.format((d2 - d1).seconds)
+        print('Insert tags: {} sec'.format((d2 - d1).seconds))
         return text
 
     def remove_repeat(self, text):
@@ -84,25 +84,25 @@ class Cleaner(object):
         seen = set()
         seen_add = seen.add
         strings = text.split('\n')
-        print 'All strings: {}'.format(str(len(strings)))
+        print('All strings: {}'.format(str(len(strings))))
         uniq_strings = [string.strip() for string in strings
                         if not (string.strip() in seen or seen_add(string.strip()))]
-        print 'Uniq strings: {}'.format(str(len(uniq_strings)))
+        print('Uniq strings: {}'.format(str(len(uniq_strings))))
         text = '\n'.join(uniq_strings)
         d2 = datetime.datetime.now()
-        print 'Remove repeated strings: {} sec'.format((d2 - d1).seconds)
+        print('Remove repeated strings: {} sec'.format((d2 - d1).seconds))
         return text
 
     def remove_noise(self, text):
         d1 = datetime.datetime.now()
         for regex in self.NOISE:
             ds = datetime.datetime.now()
-            print regex.pattern
+            print(regex.pattern)
             text, n = regex.subn('', text)
             de = datetime.datetime.now()
-            print 'Noise for pattern: {} sec. Found {}'.format((de - ds).seconds, n)
+            print('Noise for pattern: {} sec. Found {}'.format((de - ds).seconds, n))
         d2 = datetime.datetime.now()
-        print 'Remove noises: {} sec'.format((d2 - d1).seconds)
+        print('Remove noises: {} sec'.format((d2 - d1).seconds))
         return text
 
     def get_source_text(self, storage=None):
@@ -111,16 +111,16 @@ class Cleaner(object):
         filename = source_files[0]
         d1 = datetime.datetime.now()
         self.source_path = os.path.join(storage.STORAGE, filename)
-        print 'Start work with file: {}'.format(self.source_path)
+        print('Start work with file: {}'.format(self.source_path))
         text = storage.read(filename)
         d2 = datetime.datetime.now()
-        print 'Load file: {} sec'.format((d2 - d1).seconds)
+        print('Load file: {} sec'.format((d2 - d1).seconds))
         # text = self.strip(text)
         return text
 
     def clean_b(self):
         # output: b - insert tags, no repeated strings
-        print 'Clean: from B to C'
+        print('Clean: from B to C')
         text = self.get_source_text()
         text = self.insert_tags(text)
         text = self.remove_noise(text)
@@ -128,7 +128,7 @@ class Cleaner(object):
 
     def clean_a(self):
         # output: b - no headers, no repeated strings, no stop-symbols
-        print 'Clean: from A to B'
+        print('Clean: from A to B')
         lvl = '0'
         while True:
             next_lvl = str(int(lvl) + 1)
@@ -163,7 +163,7 @@ class Cleaner(object):
         texts = []
         metas = []
         d1 = datetime.datetime.now()
-        print '{} files for process'.format(end - self.START)
+        print('{} files for process'.format(end - self.START))
         for i, filename in enumerate(files[self.START:end]):
             text = self.SOURCE_STORAGE.read(filename)
             item = self.lama.db_items.items.find_one({'name': filename})
@@ -200,7 +200,7 @@ class Cleaner(object):
         # 1: clean bads
         # 2: clean text, return a clean file
         start_lvl = str(start_lvl or self.raw_start_lvl or 0)
-        print 'Clean: from RAW to A: lvl {}'.format(start_lvl)
+        print('Clean: from RAW to A: lvl {}'.format(start_lvl))
         fn = getattr(self, 'clean_raw_item_' + start_lvl)
         next_lvl = str(int(start_lvl) + 1)
         has_next = hasattr(self, 'clean_raw_item_' + next_lvl)
@@ -212,9 +212,9 @@ class Cleaner(object):
             self.SOURCE_STORAGE = self.SOURCE_STORAGE.create_sub_storage(start_lvl)
         texts, meta = self.proccess_raw_items(fn, TARGET_STORAGE)
         if start_lvl == '1':
-            print 'The following bads have been found:'
-            print self._HTML_BADS
-            print ' '.join(self._UTF_BADS)
+            print('The following bads have been found:')
+            print(self._HTML_BADS)
+            print(' '.join(self._UTF_BADS))
         if has_next:
             if self.raw_start_lvl is None:
                 return self.clean_raw(next_lvl)
@@ -240,7 +240,7 @@ class Cleaner(object):
             self.EXT = target
             getattr(self, 'clean_' + name)()
             time.sleep(.2)
-        print 'Files have been cleaned'
+        print('Files have been cleaned')
 
     def split(self, c=None, v=None, parts=None, stype=None):
         """
@@ -293,4 +293,4 @@ class Cleaner(object):
             path = self.write('\n'.join(ch_strings), name='p{}from{}'.format(i + 1, c), concat=True)
             parts_paths.append(path)
         data = {'source': self.source_path, 'parts': parts_paths}
-        print data
+        print(data)

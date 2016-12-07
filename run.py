@@ -13,6 +13,29 @@ from pymongo import MongoClient
 
 from lama.storage import Storage
 
+help_output = """
+    usage
+    pythin run.py wiki lich
+    -----------------------------------
+    python run.py wiki clean -f [raw|a|b] [-to [a|b|c]] [-s num] [-e num]
+    where:
+    -f - from format
+    -to - to format
+    -s - num of file to start
+    -e - num of file to end
+
+    clean level:
+    a - no inner noise
+    b - no headers, no repeated
+    c - insert tags, no repeated
+    -----------------------------------
+    python run.py split wiki [-c num] [-v num] [-parts percent,percent,...] [-type [a|b|c]]
+    -c - count of files: it will be c files the same size
+    -v - volume of filex: here will be x files with v strings in each
+    -parts - split file to parts of given percentage. if sum of all percentage != 100, here will be one more file
+    -stype - source type of file to split. default c
+    """
+
 
 class DBCollection(object):
     def __init__(self, db, collection_name):
@@ -61,28 +84,7 @@ class Lama(object):
         return Storage(subfolder, STORAGE_ROOT)
 
     def help(self):
-        print """
-        usage
-        pythin run.py wiki lich
-        -----------------------------------
-        python run.py wiki clean -f [raw|a|b] [-to [a|b|c]] [-s num] [-e num]
-        where:
-        -f - from format
-        -to - to format
-        -s - num of file to start
-        -e - num of file to end
-
-        clean level:
-        a - no inner noise
-        b - no headers, no repeated
-        c - insert tags, no repeated
-        -----------------------------------
-        python run.py split wiki [-c num] [-v num] [-parts percent,percent,...] [-type [a|b|c]]
-        -c - count of files: it will be c files the same size
-        -v - volume of filex: here will be x files with v strings in each
-        -parts - split file to parts of given percentage. if sum of all percentage != 100, here will be one more file
-        -stype - source type of file to split. default c
-        """
+        print(help_output)
         raise SystemExit()
 
 
@@ -130,4 +132,4 @@ if __name__ == '__main__':
         getattr(cleaner, action)(**kwargs)
 
     d2 = datetime.datetime.now()
-    print 'Spended time was {} sec'.format((d2 - d1).seconds)
+    print('Spended time was {} sec'.format((d2 - d1).seconds))
