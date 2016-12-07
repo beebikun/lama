@@ -167,8 +167,8 @@ class Cleaner(object):
         print('{} files for process'.format(end - self.START))
         for i, filename in enumerate(files[self.START:end]):
             text = self.SOURCE_STORAGE.read(filename)
-            item = self.lama.db_items.items.find_one({'name': filename})
-            data = fn(item or {'name': filename}, text)
+            # item = self.lama.db_items.items.find_one({'name': filename})
+            data = fn({'name': filename}, text)
             data = data if isinstance(data, (tuple, list)) else [data]
             text, meta = data if len(data) == 2 else [data[0], {}]
             if text is None:
