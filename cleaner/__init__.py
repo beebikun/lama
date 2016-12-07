@@ -33,7 +33,6 @@ class Cleaner(object):
         # self.items = self.lama.db_items.find_all({'type': self.TYPE})
 
     def remove_bads(self, text):
-        d1 = datetime.datetime.now()
         for normal, regex in BADS_SYMBOLS.iteritems():  # replace bad symbols
             text = regex.sub(normal, text)
 
@@ -47,8 +46,6 @@ class Cleaner(object):
         if bad_utf:
             text = bad_utf_reg.sub('', text)
             self._UTF_BADS.update(bad_utf)
-        d2 = datetime.datetime.now()
-        self._remove_bads_d += (d2 - d1).seconds
         return text
 
     def remove_html(self, text, stoppattern=None):
@@ -108,13 +105,14 @@ class Cleaner(object):
         print 'Remove noises: {} sec'.format((d2 - d1).seconds)
         return text
 
-    def get_source_text(self):
-        source_files = self.SOURCE_STORAGE.files(filtype=self.TYPE)
+    def get_source_text(self, storage=None):
+        storage = storage or self.SOURCE_STORAGE
+        source_files = storage.files(filtype=self.TYPE)
         filename = source_files[0]
         d1 = datetime.datetime.now()
-        self.source_path = os.path.join(self.SOURCE_STORAGE.STORAGE, filename)
+        self.source_path = os.path.join(storage.STORAGE, filename)
         print 'Start work with file: {}'.format(self.source_path)
-        text = self.SOURCE_STORAGE.read(filename)
+        text = storage.read(filename)
         d2 = datetime.datetime.now()
         print 'Load file: {} sec'.format((d2 - d1).seconds)
         # text = self.strip(text)
@@ -131,6 +129,14 @@ class Cleaner(object):
     def clean_a(self):
         # output: b - no headers, no repeated strings, no stop-symbols
         print 'Clean: from A to B'
+        lvl = '0'
+        while True:
+            next_lvl = str(int(lvl) + 1)
+            has_next = hasattr(self, 'clean_raw_item_' + next_lvl)
+            if not has_next:
+                break
+            lvl = next_lvl
+        self.SOURCE_STORAGE = self.SOURCE_STORAGE.create_sub_storage(lvl)
         text = self.get_source_text()
         text = self.remove_noise(text)
         self.write(text, ext='b')
@@ -140,52 +146,91 @@ class Cleaner(object):
             self.START + i + 1, item['title'].encode('utf8'), filename
         ) + text
 
-    def clean_raw(self):
-        # output: a - no inner noise
-        print 'Clean: from RAW to A'
+    def proccess_raw_items(self, fn, target_storage=None):
+        def log(i):
+            d2 = datetime.datetime.now()
+            spent = (d2 - d1).seconds
+            time_per_file = round(spent / float(i), 2)
+            remining_time = time_per_file * (l - i)
+            percent = round(i * 100.0 / l, 3)
+            stdout.write('\r{} %\t\tTime per file:{} sec\t\tRemining time: {} sec  '.format(
+                percent, time_per_file, remining_time))
+            stdout.flush()
+
         files = self.SOURCE_STORAGE.files()
         end = self.END or len(files)
         l = end - self.START
-        all_texts = []
-        all_meta = []
+        texts = []
+        metas = []
         d1 = datetime.datetime.now()
-        for i, filename in enumerate(files[self.START:self.END]):
-            stdout.flush()
+        print '{} files for process'.format(end - self.START)
+        for i, filename in enumerate(files[self.START:end]):
             text = self.SOURCE_STORAGE.read(filename)
             item = self.lama.db_items.items.find_one({'name': filename})
-            text = self.remove_bads(text)
-            text, meta = self.clean_raw_item(item, text)
+            data = fn(item or {'name': filename}, text)
+            data = data if isinstance(data, (tuple, list)) else [data]
+            text, meta = data if len(data) == 2 else [data[0], {}]
             if text is None:
                 continue
-            # text = self._page_header(filename, text, item, i)
-            all_texts.append(text)
-            all_meta.append(meta)
-            d2 = datetime.datetime.now()
-            spent = (d2 - d1).seconds
-            time_per_file = round(spent / float(i + 1), 2)
-            remining_time = time_per_file * (l - i)
-            percent = round(i * 100.0 / l, 3)
-            stdout.write('\r{} %\tTime per file:{} sec\tRemining time: {} sec'.format(
-                percent, time_per_file, remining_time))
+
+            if target_storage:
+                # if '.' in filename[:-6]:
+                #     filename = '.'.join(filename.split('.')[:-1])
+                target_storage.write(text, name=filename, ftype=self.TYPE)
+                if meta:
+                    target_storage.write_pickle(meta, name=filename, ftype=self.TYPE)
+
+            texts.append(text)
+            metas.append(meta)
+            log(i + 1)
+
         stdout.write("\n")
-        print 'Remove bads: {} sec'.format(self._remove_bads_d)
+        return texts, metas
 
-        all_texts = '\n'.join(all_texts)
-        self.TARGET_STORAGE.write_pickle(all_meta, ext='ameta', ftype=self.TYPE)
-        print 'The following bads have been found:'
-        print self._HTML_BADS
-        print ' '.join(self._UTF_BADS)
-        self.write(all_texts)
+    def clean_raw_item_0(self, item, text):
+        return text
 
-    def write(self, text, name='all'):
+    def clean_raw_item_1(self, item, text):
+        return self.remove_bads(text)
+
+    def clean_raw(self, start_lvl=None, source_storage=None):
+        # finall output: a - no inner noise
+        # lvls:
+        # 0 - if needed: files to txt
+        # 1: clean bads
+        # 2: clean text, return a clean file
+        start_lvl = str(start_lvl or self.raw_start_lvl or 0)
+        print 'Clean: from RAW to A: lvl {}'.format(start_lvl)
+        fn = getattr(self, 'clean_raw_item_' + start_lvl)
+        next_lvl = str(int(start_lvl) + 1)
+        has_next = hasattr(self, 'clean_raw_item_' + next_lvl)
+        TARGET_STORAGE = None
+        self.SOURCE_STORAGE = self.STORAGE.create_sub_storage('raw')
+        if has_next:
+            TARGET_STORAGE = self.SOURCE_STORAGE.create_sub_storage(next_lvl)
+        if int(start_lvl) > 0:
+            self.SOURCE_STORAGE = self.SOURCE_STORAGE.create_sub_storage(start_lvl)
+        texts, meta = self.proccess_raw_items(fn, TARGET_STORAGE)
+        if start_lvl == '1':
+            print 'The following bads have been found:'
+            print self._HTML_BADS
+            print ' '.join(self._UTF_BADS)
+        if has_next:
+            if self.raw_start_lvl is None:
+                return self.clean_raw(next_lvl)
+        else:
+            self.TARGET_STORAGE.write_pickle(meta, ext=self.EXT, ftype=self.TYPE)
+            self.write('\n'.join(texts))
+
+    def write(self, text, name='all', concat=False):
         text = self.strip(text)
         text = self.remove_repeat(text)
-        return self.TARGET_STORAGE.write(text, name=name, ext=self.EXT, ftype=self.TYPE)
-        # self.TARGET_STORAGE.write(text.replace('\n', ' '), name=name, ext='{}sl'.format(ext), ftype=self.TYPE)
+        return self.TARGET_STORAGE.write(text, name=name, ext=self.EXT, ftype=self.TYPE, concat=concat)
 
-    def run(self, f='raw', to=None, s=0, e=None):
+    def clean(self, f='raw', to=None, s=0, e=None, lvl=None):
         self.START = int(s)
         self.END = e and int(e)
+        self.raw_start_lvl = lvl
         si = self.ORDER.index(f)
         ei = self.ORDER.index(to) if to else si + 1
         for i, name in enumerate(self.ORDER[si:ei]):
@@ -245,7 +290,7 @@ class Cleaner(object):
         for i, ch in enumerate(chunks):
             strings_before = sum(chunks[:i])
             ch_strings = strings[strings_before: strings_before + ch]
-            path = self.write('\n'.join(ch_strings), name='p{}from{}'.format(i + 1, c))
+            path = self.write('\n'.join(ch_strings), name='p{}from{}'.format(i + 1, c), concat=True)
             parts_paths.append(path)
         data = {'source': self.source_path, 'parts': parts_paths}
         print data

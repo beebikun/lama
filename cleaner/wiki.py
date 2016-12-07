@@ -120,7 +120,7 @@ class WikiCleaner(Cleaner):
         text = re.sub('(?:%s[^\n]*\n){4,}' % marker, '', text)
         return text
 
-    def clean_raw_item(self, item, text):
+    def clean_raw_item_2(self, item, text):
         title = item['title']
         if self.bad_title(title):
             return None, None
@@ -151,9 +151,4 @@ class WikiCleaner(Cleaner):
         return text, meta
 
 
-def process(lama, **kwargs):
-    cleaner = WikiCleaner(lama)
-    split = kwargs.pop('split', None)
-    if split:
-        return cleaner.split(**kwargs)
-    return cleaner.run(**kwargs)
+cleaner = WikiCleaner
