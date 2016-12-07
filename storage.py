@@ -3,7 +3,6 @@ from subprocess import Popen, PIPE
 import pickle
 import datetime
 import os
-import re
 
 
 # http://macappstore.org/antiword/
@@ -110,15 +109,11 @@ def read_file(filename, file_path):
 
 class Storage():
 
-    READERS = {
-        'xlsx': 'read_xls',
-        'xls': 'read_xls',
-    }
-
     def __str__(self):
         return self.STORAGE
 
     def __init__(self, dir_name, parent_folder=None):
+        self.EXT = dir_name
         self.STORAGE, exists = self.join(dir_name, parent_folder, create=True)
 
     def create_sub_storage(self, subfolder, date=True):
@@ -140,34 +135,33 @@ class Storage():
             exists = True
         return path, exists
 
-    def generate_name(self, name, ext, ftype, text=None):
-        wc = ''
-        if text:
-            words = re.findall('\w+', text.lower())
-            wc = str(len(set(words)))
+    def generate_name(self, name='all', ftype=''):
+        ext = self.EXT
         date = datetime.datetime.now().strftime(DATE_FORMAT)
-        return '{ftype}_{name}_{wc}_{date}.c{ext}'.format(
-            ftype=ftype, name=name, wc=wc, date=date, ext=ext)
+        return '{ftype}_{name}_{date}.c{ext}'.format(
+            ftype=ftype, name=name, date=date, ext=ext)
 
-    def write(self, text, name='all', ftype=None, ext=None, rewrite=True, concat=False):
+    def write(self, text, name='all', ftype=None, rewrite=True, concat=False):
         def write(file_path, text, line_mode='ml'):
             if line_mode == 'sl':
                 text = text.replace('\n', ' ')
-            if ext:
+            if ftype:
                 file_path = file_path + line_mode
             f = open(file_path, 'w+')
             f.write(text)
             f.close()
-        if ext:
-            name = self.generate_name(name, ext, ftype, text)
+        if name.startswith(ftype):
+            name = name.split('_')[1]
+        name = name[:10]
+        if ftype:
+            name = self.generate_name(name, ftype)
         file_path, exists = self.join(name)
         if not rewrite and exists:
             raise ValueError('File {} already exists'.format(file_path))
         write(file_path, text)
         if concat:
             write(file_path, text, 'sl')
-        if ext:
-            print('Write file {}'.format(file_path))
+        # print('Write file {}'.format(file_path))
         return file_path
 
     def write_pickle(self, data, name='all', ftype=None, ext=''):

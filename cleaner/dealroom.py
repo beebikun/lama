@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 from lama.cleaner import Cleaner
-import re
 
 
 class DealRoomCleaner(Cleaner):
     TYPE = 'dealroom'
-
-    def clean_raw_item_2(self, item, text):
-        return text
 
     def pickle(self, **kwargs):
         storage = self.STORAGE.create_sub_storage('data')
