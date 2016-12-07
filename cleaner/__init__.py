@@ -120,7 +120,7 @@ class Cleaner(object):
         output_path, exist = self.TARGET_STORAGE.join(target_name)
         output = open(output_path, 'w+')
         source_path, exist = self.SOURCE_STORAGE.join('*')
-        subprocess.call(['cat', source_path], stdout=output)
+        subprocess.call('cat {} > {}'.format(source_path, output_path), shell=True)
         output.close()
 
     def get_source_text(self, storage=None):
@@ -182,7 +182,7 @@ class Cleaner(object):
         self.END = e and int(e)  # number of file to stop
         self.N = n  # process only file with this number
         f = int(f or 0)
-        to = min(int(to) or f + 1, len(self.ORDER))
+        to = min(int(to or f + 1), len(self.ORDER))
         while f < to:
             fn_name, concated = self.ORDER[f]
             print('------------')
