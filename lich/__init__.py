@@ -48,8 +48,8 @@ class Lich(object):
             data = json.loads(response.read())
             time.sleep(.5)
         except Exception as e:
-            print url
-            print response.read()
+            print(url)
+            print(response.read())
             raise e
         return data
 
