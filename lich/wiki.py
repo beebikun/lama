@@ -79,7 +79,7 @@ class WikiLich(Lich):
         data = self.get_json(url)
         try:
             children = data['query']['categorymembers']
-        except Exception, e:
+        except Exception as e:
             print(url)
             print(data)
             raise(e)
