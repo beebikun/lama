@@ -42,13 +42,13 @@ class Cleaner(object):
         entity_reg = re.compile('&#\w+;')
         bad_utf_reg = re.compile(r'[^\./# ?$,><@\w()\n&*\'"!%\-\[=+:;~\]\\|{}]+')
         entity = set(entity_reg.findall(text))
-        if entity:
-            text = entity_reg.sub('', text)
-            self._HTML_BADS.update(entity)
-        bad_utf = set(bad_utf_reg.findall(text))
-        if bad_utf:
-            text = bad_utf_reg.sub('', text)
-            self._UTF_BADS.update(bad_utf)
+        # if entity:
+        #     text = entity_reg.sub('', text)
+        #     self._HTML_BADS.update(entity)
+        # bad_utf = set(bad_utf_reg.findall(text))
+        # if bad_utf:
+        #     text = bad_utf_reg.sub('', text)
+        #     self._UTF_BADS.update(bad_utf)
         return text
 
     def remove_html(self, text, stoppattern=None):
@@ -160,6 +160,9 @@ class Cleaner(object):
                 percent, time_per_file, remining_time))
             stdout.flush()
 
+        if self.N:
+            self.START = self.N
+            self.END = self.N + 1
         files = self.SOURCE_STORAGE.files()
         end = self.END or len(files)
         l = end - self.START
@@ -230,9 +233,10 @@ class Cleaner(object):
         text = self.remove_repeat(text)
         return self.TARGET_STORAGE.write(text, name=name, ext=self.EXT, ftype=self.TYPE, concat=concat)
 
-    def clean(self, f='raw', to=None, s=0, e=None, lvl=None):
+    def clean(self, f='raw', to=None, s=0, e=None, lvl=None, n=None):
         self.START = int(s)
         self.END = e and int(e)
+        self.N = n
         self.raw_start_lvl = lvl
         si = self.ORDER.index(f)
         ei = self.ORDER.index(to) if to else si + 1
