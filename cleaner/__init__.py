@@ -6,7 +6,7 @@ import time
 import math
 from sys import stdout
 
-from lama.cleaner.config import BADS_SYMBOLS, TAGS, HEADERS, SYSTEM_NOISE
+from lama.cleaner.config import BADS_SYMBOLS, BADS_SYMBOLS_A, TAGS, HEADERS, SYSTEM_NOISE
 
 
 class Cleaner(object):
@@ -33,8 +33,10 @@ class Cleaner(object):
         self.NOISE = self.HEADERS + self.SYSTEM_NOISE
         # self.items = self.lama.db_items.find_all({'type': self.TYPE})
 
-    def remove_bads(self, text):
-        for normal, regex in BADS_SYMBOLS.items():  # replace bad symbols
+    def remove_bads(self, text, bads=None):
+        if bads is None:
+            bads = BADS_SYMBOLS_A
+        for normal, regex in bads.items():  # replace bad symbols
             text = regex.sub(normal, text)
 
         entity_reg = re.compile('&#\w+;')
