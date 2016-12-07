@@ -47,7 +47,7 @@ class Lich(object):
         try:
             data = json.loads(response.read())
             time.sleep(.5)
-        except Exception, e:
+        except Exception as e:
             print url
             print response.read()
             raise e
