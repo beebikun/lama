@@ -26,7 +26,8 @@ class Cleaner(object):
     def __init__(self, lama):
         self.lama = lama
         self.STORAGE = lama.create_storage(self.TYPE)
-        self.TAGS.update(**TAGS)
+        for pattern, tag in TAGS.items():
+            self.TAGS[pattern] = tag
         self.HEADERS += HEADERS
         self.SYSTEM_NOISE += SYSTEM_NOISE
         self.NOISE = self.HEADERS + self.SYSTEM_NOISE

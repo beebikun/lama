@@ -24,7 +24,7 @@ class DealRoomCleaner(Cleaner):
                 assert cat
                 text = '\n'.join(r[1:]).decode('utf-8', errors='replace').encode('ascii', errors='ignore')
                 if not text:
-                    print r
+                    print(r)
                 assert text
                 requests.append({
                     'cat': cat.replace('Cat:', '').strip(),
