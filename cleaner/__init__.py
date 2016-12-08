@@ -22,6 +22,7 @@ class Cleaner(object):
     _remove_bads_d = 0
 
     ORDER = [
+        ('pre', False),
         ('rewrite_uniq', False),
         ('remove_bads_a', False),
         ('remove_html', False),
@@ -132,6 +133,9 @@ class Cleaner(object):
         filename = source_files[0]
         self.source_path = os.path.join(storage.STORAGE, filename)
         text = storage.read(filename)
+        return text
+
+    def pre(self, item, text):
         return text
 
     def proccess_items(self, fn):

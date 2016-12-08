@@ -6,8 +6,9 @@ import re
 class SecCleaner(Cleaner):
     TYPE = 'sec'
 
-    def clean_raw_item_2(self, item, text):
-        text = self.remove_html()
+    def pre(self, item, text):
+        text = re.sub('<SEC-HEADER>[\s\S]+</SEC-HEADER>', '', text, flags=re.I)
+        text = re.sub('<DOCUMENT>\n<TYPE>GRAPHIC[\s\S]+</DOCUMENT>', '', text, flags=re.I)
         return text
 
 
