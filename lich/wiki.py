@@ -120,6 +120,4 @@ class WikiLich(Lich):
             self.download_category(title=title.encode('utf8'), path=title)
 
 
-def download(lama):
-    lich = WikiLich(lama)
-    lich.run()
+lich = WikiLich

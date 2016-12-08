@@ -150,10 +150,9 @@ class Storage():
             f = open(file_path, 'w+')
             f.write(text)
             f.close()
-        if name.startswith(ftype):
+        if ftype and name.startswith(ftype):
             name = name.split('_')[1]
-        name = name[:10]
-        if ftype:
+            name = name[:10]
             name = self.generate_name(name, ftype)
         file_path, exists = self.join(name)
         if not rewrite and exists:

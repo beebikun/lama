@@ -90,7 +90,10 @@ class Lama(object):
 
 lama = Lama()
 
-from lama.lich import wiki as wiki_lich
+from lama.lich import (
+    wiki as wiki_lich,
+    sec as sec_lich,
+)
 from lama.cleaner import (
     wiki as wiki_cleaner,
     dealroom as dealroom_cleaner,
@@ -105,8 +108,8 @@ CLEAN = {
 
 
 DOWNLOAD = {
-    'wiki': wiki_lich.download,
-    # 'sec': lich.sec.download,
+    'wiki': wiki_lich.lich,
+    'sec': sec_lich.lich,
 }
 
 
@@ -124,12 +127,12 @@ if __name__ == '__main__':
 
     kwargs = dict([a.strip().split(' ') for a in ' '.join(sys.argv[3:]).split('-') if a])
 
-    if action == 'lich':
-        DOWNLOAD[name](lama)
-
-    else:
-        cleaner = CLEAN[name](lama)
+    cleaner = CLEAN[name](lama)
+    if hasattr(cleaner, action):
         getattr(cleaner, action)(**kwargs)
+    else:
+        lich = DOWNLOAD[name](lama)
+        getattr(lich, action)(**kwargs)
 
     d2 = datetime.datetime.now()
     print('Spended time was {} sec'.format((d2 - d1).seconds))

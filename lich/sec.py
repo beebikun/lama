@@ -1,124 +1,62 @@
 # -*- coding: utf-8 -*-
-""" Get data from sec """
+from lama.lich import Lich
+import re
+import datetime
+from sys import stdout
 
 
-class Form(Item):
-    def __init__(self, item):
-        self.item = item
-        self.download()
-        self.downloaded = False
+class SecLich(Lich):
+    TYPE = 'sec'
+    BASE_URL = "ftp://ftp.sec.gov"
 
-    def download(self):
-        url = '{}/{}'.format(settings.BASE_URL, self.item['file_name'])
-        name = get_name(url)
+    def convert_idxs(self, **kwargs):
+        SOURCE = self.STORAGE.create_sub_storage('indexes')
+        TARGET = self.STORAGE.create_sub_storage('urls')
+        indexes = SOURCE.files()
+        created_urls = TARGET.files()
+        for idx_name in indexes:
+            urls = []
+            if idx_name in created_urls:
+                continue
+            idx = SOURCE.read(idx_name)
+            for line in idx.split('\n'):
+                if 's-4' not in line.lower():
+                    continue
+                path = re.search('edgar/data/[^\s]+', line).group()
+                url = '{}/{}'.format(self.BASE_URL, path)
+                urls.append(url)
+            if len(urls) > 0:
+                try:
+                    TARGET.write('\n'.join(urls), idx_name)
+                    print('Write urls for {}'.format(idx_name))
+                except Exception as e:
+                    print('Failed write urls for {}'.format(idx_name))
+                    raise e
+            else:
+                print('File {} has no S-4'.format(idx_name))
 
-        in_db = self.check(name)
-        if in_db:
-            return
+    def download(self, **kwargs):
+        def log(i):
+            d2 = datetime.datetime.now()
+            spent = round((d2 - d1).seconds, 2)
+            time_per_file = round(spent / float(i), 2)
+            remining_time = round(time_per_file * (l - i), 2)
+            percent = round(i * 100.0 / l, 2)
+            stdout.write('\r{} %\t\tTime per file:{} sec\t\tRemining time: {} sec  '.format(
+                percent, time_per_file, remining_time))
+            stdout.flush()
 
-        path = get_path(self.item['form_type'], name)
-        self.item['name'] = name
-        self.item['url'] = url
-        self.item['path'] = path
-        time.sleep(settings.SLEEP)
-        super(Form, self).download(url, path)
-        self.downloaded = True
-        self.write(self.item)
+        d1 = datetime.datetime.now()
+        SOURCE = self.STORAGE.create_sub_storage('urls')
+        url_files = SOURCE.files()
+        for filename in url_files:
+            urls = SOURCE.read(filename).split('\n')
+            l = len(urls)
+            for i, url in enumerate(urls):
+                self.wget(url)
+                log(i + 1)
+            stdout.write('\n')
+            print('Urls for {} have been downloaded'.format(filename))
+            break
 
-
-class Index(Item):
-    def __init__(self, year, qtr, n=0, path=None):
-        self.n = n
-        url = url = '{}/edgar/full-index/{}/QTR{}/company.idx'.format(settings.BASE_URL, year, qtr)
-        name = get_name(url)
-        if path is None:
-            self.download(url, name)
-        else:
-            self.proccess(path, name, url)
-
-    def get_date(self, body):
-        last_date_str = re.findall('Last Data Received:\s+\w+ \d+, \d+', body)
-        if len(last_date_str) == 0:
-            return
-        last_date = last_date_str[0].replace('Last Data Received:', '').strip()
-        return datetime.datetime.strptime(last_date, '%B %d, %Y')
-
-    def _clean_line_data(self, line):
-        if len(line) == 4:
-            line = [''] + line
-        STOPPERS = ['/TA', 'NA', '/FI', '/ADV', 'LLC', 'TECHNOLOGIES CORP', 'CORP', 'LEO']
-        for ptrn in STOPPERS:
-            if ptrn in line:
-                line[0] += ptrn
-                line.remove(ptrn)
-        return line
-
-    def process_line(self, line, start):
-        line = [el.strip() for el in line.replace('\n', '').split('  ') if el.strip().replace('-', '')]
-        if len(line) == 0:
-            return start
-        if line == settings.IDX_HEADER:
-            return True
-        if not start:
-            return
-        line = self._clean_line_data(line)
-        data = dict(zip(settings.IDX_HEADER, line))
-        if data['Form Type'] not in settings.ALLOWED_FORMS:
-            return True
-        print data
-        company_forms = dict(
-            form_type=data['Form Type'],
-            date=datetime.datetime.strptime(data['Date Filed'], '%Y-%m-%d'),
-
-            company_name=data['Company Name'],
-            cik=data['CIK'],
-            file_name=data['File Name'],
-        )
-        form = Form(company_forms)
-        self.n += 1
-        print '{} form have been downloaded'.format(self.n)
-        return form
-
-    def proccess(self, path, name, url):
-        in_db = self.check(name)
-        item = in_db or dict(
-            form_type='index',
-            name=name,
-            path=path,
-            url=url,
-        )
-        with open(path) as idx:
-            start = None
-            for line in idx.readlines():
-                if item.get('date') is None:
-                    item['date'] = self.get_date(line)
-                start = self.process_line(line, start)
-        if in_db is None:
-            self.write(item)
-
-    def download(self, url, name):
-        path = get_path('index', name)
-        super(Index, self).download(url, path)
-        self.proccess(path, name, url)
-
-
-START_YEAR = 1993
-END_YEAR = 2016
-
-
-def download_indexes():
-    for year in reversed(xrange(START_YEAR, END_YEAR + 1)):
-        for qtr in xrange(1, 5):
-            print 'Download index year {} qtr {}'.format(year, qtr)
-            idx = Index(year, qtr)
-
-if __name__ == "__main__":
-    # download_indexes
-    # n = 0
-    # for year in reversed(xrange(START_YEAR, END_YEAR + 1)):
-    #     for qtr in xrange(1, 5):
-    #         idx = Index(year, qtr, n)
-    #         n = idx.n
-    # Index(
-    #     2016, 1, path='/Users/kunla/lamedoc/alpaka/TMP/index/262ad775edcd3322374e63c63053d1465c13dd9331187059d927091b')
-
+lich = SecLich
