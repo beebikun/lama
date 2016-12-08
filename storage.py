@@ -184,7 +184,12 @@ class Storage():
         file_path, exists = self.join(name, create=False)
         if not exists:
             raise ValueError('File {} is not exist'.format(file_path))
-        return read_file(name, file_path)
+        try:
+            text = read_file(name, file_path)
+        except Exception as e:
+            print (file_path)
+            raise e
+        return text
 
     def files(self, filtype=None):
         def get_date(filename):
