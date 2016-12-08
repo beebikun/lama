@@ -300,14 +300,14 @@ BADS_SYMBOLS = {
     # 'z': ['ζ', '&zeta;', '&#950;', '&#x3b6;', ],
 }
 
-for normal in BADS_SYMBOLS:
-    bads = '|'.join(BADS_SYMBOLS[normal])
-    BADS_SYMBOLS[normal] = re.compile(bads, flags=re.I)
+# for normal in BADS_SYMBOLS:
+#     bads = '|'.join(BADS_SYMBOLS[normal])
+#     BADS_SYMBOLS[normal] = re.compile(bads, flags=re.I)
 
 
-for normal in BADS_SYMBOLS_A:
-    bads = '|'.join(BADS_SYMBOLS_A[normal])
-    BADS_SYMBOLS_A[normal] = re.compile(bads, flags=re.I)
+# for normal in BADS_SYMBOLS_A:
+#     bads = '|'.join(BADS_SYMBOLS_A[normal])
+#     BADS_SYMBOLS_A[normal] = re.compile(bads, flags=re.I)
 
 
 TAGS = {

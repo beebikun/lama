@@ -50,8 +50,11 @@ class Cleaner(object):
     def _remove_bads(self, text, bads=None, remove=False):
         if bads is None:
             bads = BADS_SYMBOLS_A + BADS_SYMBOLS
-        for normal, regex in bads.items():  # replace bad symbols
-            text = regex.sub(normal, text)
+
+        for normal, bad_symbols in bads.items():  # replace bad symbols
+            # text = regex.sub(normal, text)
+            for s in bad_symbols:
+                text = text.replace(s, normal)
 
         if remove:
             entity_reg = re.compile('&#\w+;')
@@ -134,10 +137,10 @@ class Cleaner(object):
     def proccess_items(self, fn):
         def log(i):
             d2 = datetime.datetime.now()
-            spent = (d2 - d1).seconds
+            spent = round((d2 - d1).seconds, 2)
             time_per_file = round(spent / float(i), 2)
             remining_time = round(time_per_file * (l - i), 2)
-            percent = round(i * 100.0 / l, 3)
+            percent = round(i * 100.0 / l, 2)
             stdout.write('\r{} %\t\tTime per file:{} sec\t\tRemining time: {} sec  '.format(
                 percent, time_per_file, remining_time))
             stdout.flush()
