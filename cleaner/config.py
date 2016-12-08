@@ -4,7 +4,7 @@ import re
 # from lama.cleaner.tags.date import date_compile
 from lama.cleaner.tags.latex import latex_compile
 
-BADS_SYMBOLS_A = {
+BADS_SYMBOLS = {
     ' ': [' ', '&nbsp;', '&#160;', '&#xa0;',
           ' ', '&ensp;', '&#8194;', '&#x2002;',
           ' ', '&emsp;', '&#8195;', '&#x2003;', '&#x20;',
@@ -27,9 +27,6 @@ BADS_SYMBOLS_A = {
           '〉', '&rang;', '&#9002;', '&#10217;', '&#x27e9;',
           '⊃', '&sup;', '&#8835;', '&#x2283;',
           '⊇', '&supe;', '&#8839;', '&#x2287;', ],
-}
-
-BADS_SYMBOLS = {
     # '': ['&#8482;', '&#153;', '&#8203;',
     #      'ˆ', '&circ;', '&#710;', '&#x2c6;',
     #      '∼', '&sim;', '&#8764;', '&#x223c;',
@@ -325,8 +322,9 @@ TAGS = {
 HEADERS = [
     re.compile('^[^A-Za-z]+$', flags=re.M),  # no letters in a string
     re.compile('^[^\s]+$', flags=re.M),  # one word
-    re.compile('^[A-Z \d\':]+$', flags=re.M), # text in bold
-    latex_compile,  # remove strings with formuls
+    re.compile('^Item \d+\.$', flags=re.M),  # one word
+    re.compile('^[A-Z \d\':\.]+$', flags=re.M), # text in bold
+    # latex_compile,  # remove strings with formuls
 ]
 
 SYSTEM_NOISE = [

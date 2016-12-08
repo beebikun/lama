@@ -190,7 +190,7 @@ class Storage():
         def get_date(filename):
             filename = filename.split('.')[0]
             date = filename.split('_')[-1]
-            return datetime.datetime.strptime(date, self.DATE_FORMAT)
+            return datetime.datetime.strptime(date, DATE_FORMAT)
         files = []
         for f in os.listdir(self.STORAGE):
             if os.path.isfile(os.path.join(self.STORAGE, f)):

@@ -7,7 +7,7 @@ import subprocess
 import math
 from sys import stdout
 
-from lama.cleaner.config import BADS_SYMBOLS, BADS_SYMBOLS_A, TAGS, HEADERS, SYSTEM_NOISE
+from lama.cleaner.config import BADS_SYMBOLS, TAGS, HEADERS, SYSTEM_NOISE
 
 
 class Cleaner(object):
@@ -22,14 +22,12 @@ class Cleaner(object):
     _remove_bads_d = 0
 
     ORDER = [
-        ('pre', False),
-        ('rewrite_uniq', False),
-        ('remove_bads_a', False),
-        ('remove_html', False),
-        ('concat', True),
-        ('rewrite_uniq', False),
-        ('remove_bads_b', False),
-        ('remove_noise', False),
+        ('pre', 'proccess_items'),
+        ('remove_bads', 'proccess_items'),
+        ('remove_html', 'proccess_items'),
+        ('concat', 'concat'),
+        ('remove_repeat', 'process_concated'),
+        ('remove_noise', 'process_concated'),
     ]
 
     def __init__(self, lama):
@@ -39,44 +37,30 @@ class Cleaner(object):
             self.TAGS[pattern] = tag
         self.HEADERS += HEADERS
         self.SYSTEM_NOISE += SYSTEM_NOISE
-        self.NOISE = self.HEADERS + self.SYSTEM_NOISE
-        # self.items = self.lama.db_items.find_all({'type': self.TYPE})
 
-    def remove_bads_a(self, item, text):
-        return self._remove_bads(text, BADS_SYMBOLS_A)
-
-    def remove_bads_b(self, item, text):
-        return self._remove_bads(text, BADS_SYMBOLS, True)
-
-    def _remove_bads(self, text, bads=None, remove=False):
-        if bads is None:
-            bads = BADS_SYMBOLS_A + BADS_SYMBOLS
-
-        for normal, bad_symbols in bads.items():  # replace bad symbols
-            # text = regex.sub(normal, text)
+    def remove_bads(self, text):
+        for normal, bad_symbols in BADS_SYMBOLS.items():  # replace bad symbols
             for s in bad_symbols:
                 text = text.replace(s, normal)
 
-        if remove:
-            entity_reg = re.compile('&#\w+;')
-            bad_utf_reg = re.compile(r'[^\./# ?$,><@\w()\n&*\'"!%\-\[=+:;~\]\\|{}]+')
-            entity = set(entity_reg.findall(text))
-            if entity:
-                text = entity_reg.sub('', text)
-                self._HTML_BADS.update(entity)
-            bad_utf = set(bad_utf_reg.findall(text))
-            if bad_utf:
-                text = bad_utf_reg.sub('', text)
-                self._UTF_BADS.update(bad_utf)
+        entity_reg = re.compile('&#\w+;')
+        bad_utf_reg = re.compile(r'[^\./# ?$,><@\w()\n&*\'"!%\-\[=+:;~\]\\|{}]+')
+        entity = set(entity_reg.findall(text))
+        if entity:
+            text = entity_reg.sub('', text)
+            self._HTML_BADS.update(entity)
+        bad_utf = set(bad_utf_reg.findall(text))
+        if bad_utf:
+            text = bad_utf_reg.sub('', text)
+            self._UTF_BADS.update(bad_utf)
         return text
 
-    def remove_html(self, item, text, stoppattern=None):
+    def remove_html(self, text, stoppattern=None):
         def replace(m):
             if stoppattern and stoppattern.search(m.group()):
                 return m.group()
             return ''
-
-        text = re.sub('<[\s\S]*?>', replace, text)
+        text = re.sub('<[\s\S]*?>', '', text)
         return text
 
     def strip(self, text):
@@ -87,36 +71,41 @@ class Cleaner(object):
         text = re.sub('\n{2,}', '\n', text)  # remove empty strings
         # A&M is better than A & M
         text = text.replace(' &', '&').replace('& ', '&')
+        text = text.replace(' ,', ',')
         return text.strip()
 
-    def insert_tags(self, item, text):
+    def insert_tags(self, text):
 
         for pattern, tag in self.TAGS.iteritems():
             text, n = pattern.subn(tag, text)
         return text
 
-    def rewrite_uniq(self, item, text):
-        input_path, exist = self.SOURCE_STORAGE.join(item['name'])
-        output_path, exist = self.TARGET_STORAGE.join(item['name'])
-        output = open(output_path, 'w+')
-        subprocess.call(['awk', "!seen[$0]++", input_path], stdout=output)
-        output.close()
-        return True
-
-    def remove_repeat(self, item, text):
+    def remove_repeat(self, text):
         seen = set()
-        seen_add = seen.add
         strings = text.split('\n')
+        uniq_strings = []
 
-        uniq_strings = [string.strip() for string in strings
-                        if not (string.strip() in seen or seen_add(string.strip()))]
+        for string in strings:
+            s = string.strip().lower()
+            if s not in seen:
+                seen.add(s)
+                uniq_strings.append(string)
 
         text = '\n'.join(uniq_strings)
         return text
 
-    def remove_noise(self, item, text):
-        for regex in self.NOISE:
+    def remove_noise(self, text):
+        for regex in self.SYSTEM_NOISE:
             text = regex.sub('', text)
+
+        text = self.strip(text)
+
+        for regex in self.HEADERS:
+            # print ('------------')
+            # print (regex.findall(text))
+            # print (regex.pattern)
+            text, n = regex.subn('', text)
+            # print (n)
         return text
 
     def concat(self, *args):
@@ -124,6 +113,7 @@ class Cleaner(object):
         output_path, exist = self.TARGET_STORAGE.join(target_name)
         output = open(output_path, 'w+')
         source_path, exist = self.SOURCE_STORAGE.join('*')
+        print('Start work with:{}'.format(source_path))
         subprocess.call('cat {} > {}'.format(source_path, output_path), shell=True)
         output.close()
 
@@ -132,11 +122,17 @@ class Cleaner(object):
         source_files = storage.files(filtype=self.TYPE)
         filename = source_files[0]
         self.source_path = os.path.join(storage.STORAGE, filename)
+        print('Start work with: {}'.format(filename))
         text = storage.read(filename)
         return text
 
-    def pre(self, item, text):
+    def pre(self, text):
         return text
+
+    def process_concated(self, fn):
+        source = self.get_source_text()
+        text = fn(source)
+        self.write(text)
 
     def proccess_items(self, fn):
         def log(i):
@@ -159,16 +155,10 @@ class Cleaner(object):
         print('{} files for process'.format(end - self.START))
         for i, filename in enumerate(files[self.START:end]):
             text = self.SOURCE_STORAGE.read(filename)
-            data = fn({'name': filename}, text)
-            data = data if isinstance(data, (tuple, list)) else [data]
-            text, meta = data if len(data) == 2 else [data[0], {}]
+            text = fn(text)
             if text is None:
                 continue
-            if not isinstance(text, bool):
-                self.TARGET_STORAGE.write(text, name=filename, ftype=self.TYPE)
-                if meta:
-                    self.TARGET_STORAGE.write_pickle(meta, name=filename, ftype=self.TYPE)
-
+            self.write(text, filename)
             log(i + 1)
 
         stdout.write("\n")
@@ -180,8 +170,9 @@ class Cleaner(object):
         return chr(a + idx - 1)
 
     def write(self, text, name='all', concat=False):
+        if text is None or isinstance(text, bool):
+            return
         text = self.strip(text)
-        text = self.remove_repeat(text)
         return self.TARGET_STORAGE.write(text, name=name, ftype=self.TYPE, concat=concat)
 
     def clean(self, f=0, to=None, s=0, e=None, n=None):
@@ -191,20 +182,21 @@ class Cleaner(object):
         f = int(f or 0)
         to = min(int(to or f + 1), len(self.ORDER))
         while f < to:
-            fn_name, concated = self.ORDER[f]
+            fn_name, process_fn = self.ORDER[f]
+            source_name = self.storage_name_by_order_idx(f)
+            target_name = self.storage_name_by_order_idx(f + 1)
             print('------------')
             d1 = datetime.datetime.now()
-            print('Start cleaning: {}'.format(fn_name))
-            source_name = self.storage_name_by_order_idx(f)
+            print('Start cleaning: {} (stage {})'.format(fn_name, target_name))
             self.SOURCE_STORAGE = self.STORAGE.create_sub_storage(source_name)
-            target_name = self.storage_name_by_order_idx(f + 1)
             self.TARGET_STORAGE = self.STORAGE.create_sub_storage(target_name)
             self.EXT = target_name
-            fn = getattr(self, fn_name)
-            if concated:
-                fn()
-            else:
-                self.proccess_items(fn)
+            clean_fn = getattr(self, fn_name)
+            process = getattr(self, process_fn)
+            process(clean_fn)
+            if fn_name == 'remove_bads':
+                print(self._HTML_BADS)
+                print(self._UTF_BADS)
             d2 = datetime.datetime.now()
             print('End cleaning: {} sec'.format((d2 - d1).seconds))
             time.sleep(.2)
