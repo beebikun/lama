@@ -42,7 +42,7 @@ class SecCleaner(Cleaner):
                     i_end = i
                     break
             html = ''.join(pages[i_start + 1:i_end - 1])
-            print ([i_end, len(pages)])
+            # print ([i_end, len(pages)])
             s4.append(html)
         # s4.append(text)
         text = '\n'.join(s4)
