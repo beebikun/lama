@@ -24,7 +24,7 @@ class SecCleaner(Cleaner):
                 continue
             form = form.split('TEXT>')[1][:-2]
             pages = re.split('|'.join(self.PAGE_SPLITS), form, flags=re.I)
-            # i_start = 0
+            i_start = 0
             i_end = len(pages)
             i = -1
             for page in pages:
