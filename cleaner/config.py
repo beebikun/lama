@@ -325,7 +325,10 @@ HEADERS = [
     re.compile('^[^A-Za-z]+$', flags=re.M),  # no letters in a string
     re.compile('^[^\s]+$', flags=re.M),  # one word
     re.compile('^Item \d+\.$', flags=re.M),  # one word
-    re.compile('^[A-Z \d\':\.]+$', flags=re.M), # text in bold
+    re.compile('^[A-Z \d\':\.\-]+$', flags=re.M), # text in bold
+    re.compile('^By [\w ]+:$', flags=re.M),
+    re.compile('^"[\w \-]+" means:$', flags=re.M),
+    re.compile('^(?: ?[^\s]+ ?){1,4}$', flags=re.M),
     # latex_compile,  # remove strings with formuls
 ]
 
