@@ -123,7 +123,7 @@ class Cleaner(object):
     def concat(self, *args):
         target_name = self.TARGET_STORAGE.generate_name(ftype=self.TYPE)
         output_path, exist = self.TARGET_STORAGE.join(target_name)
-        output = open(output_path, 'w+')
+        output = open(output_path + 'ml', 'w+')
         source_path, exist = self.SOURCE_STORAGE.join('*')
         print('Start work with:{}'.format(source_path))
         subprocess.call('cat {} > {}'.format(source_path, output_path), shell=True)
@@ -170,7 +170,7 @@ class Cleaner(object):
             text = fn(text)
             if text is None:
                 continue
-            self.write(text, filename)
+            self.write(text, filename, ftype=False)
             log(i + 1)
 
         stdout.write("\n")
@@ -181,11 +181,11 @@ class Cleaner(object):
         a = 97
         return chr(a + idx - 1)
 
-    def write(self, text, name='all', concat=False):
+    def write(self, text, name='all', concat=False, ftype=True):
         if text is None or isinstance(text, bool):
             return
         text = self.strip(text)
-        return self.TARGET_STORAGE.write(text, name=name, ftype=self.TYPE, concat=concat)
+        return self.TARGET_STORAGE.write(text, name=name, ftype=ftype and self.TYPE, concat=concat)
 
     def clean(self, f=0, to=None, s=0, e=None, n=None):
         self.START = int(s)  # number of file to start

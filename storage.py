@@ -101,9 +101,14 @@ def read_file(filename, file_path):
     elif ext == "pdf":
         return convert_pdf_to_txt(file_path)
     else:
-        f = open(file_path, 'r+')
-        text = f.read()
-        f.close()
+        try:
+            f = open(file_path, 'r+')
+            text = f.read()
+            f.close()
+        except UnicodeDecodeError:
+            f = open(file_path, 'r+', encoding="ISO-8859-1")
+            text = f.read()
+            f.close()
         return text
 
 
@@ -150,9 +155,10 @@ class Storage():
             f = open(file_path, 'w+')
             f.write(text)
             f.close()
-        if ftype and name.startswith(ftype):
-            name = name.split('_')[1]
-            name = name[:10]
+        if ftype:
+            if name.startswith(ftype):
+                name = name.split('_')[1]
+                name = name[:10]
             name = self.generate_name(name, ftype)
         file_path, exists = self.join(name)
         if not rewrite and exists:

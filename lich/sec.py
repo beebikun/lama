@@ -57,6 +57,5 @@ class SecLich(Lich):
                 log(i + 1)
             stdout.write('\n')
             print('Urls for {} have been downloaded'.format(filename))
-            break
 
 lich = SecLich
