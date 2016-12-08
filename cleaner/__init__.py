@@ -94,11 +94,23 @@ class Cleaner(object):
         text = '\n'.join(uniq_strings)
         return text
 
+    def remove_repeated_no_letters(self, text):
+        def remove_repeated(m):
+            p = m.group()
+            p_set = set(p)
+            if len(p_set) > 1:
+                return p
+            return ''.join(p_set)
+
+        text = re.sub('[^\s\w]{2,}', remove_repeated, text)
+        return text
+
     def remove_noise(self, text):
         for regex in self.SYSTEM_NOISE:
             text = regex.sub('', text)
 
         text = self.strip(text)
+        text = self.remove_repeated_no_letters(text)
 
         for regex in self.HEADERS:
             # print ('------------')

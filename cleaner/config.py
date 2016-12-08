@@ -4,6 +4,7 @@ import re
 # from lama.cleaner.tags.date import date_compile
 from lama.cleaner.tags.latex import latex_compile
 
+
 BADS_SYMBOLS = {
     ' ': [' ', '&nbsp;', '&#160;', '&#xa0;',
           ' ', '&ensp;', '&#8194;', '&#x2002;',
@@ -47,16 +48,17 @@ BADS_SYMBOLS = {
     # '(TM)': ['™', '&trade;', '&#8482;', '&#153;'],
     # '+/-': ['±', '&plusmn;', '&#177;', '&#xb1;'],
     '}': ['&#125;', ],
-    ' "': ['«', '&laquo;', '&#171;', '&#xab;',
-           '»', '&raquo;', '&#187;', '&#xbb;',
-           '“', '&ldquo;', '&#8220;', '&#x201c;',
-           '”', '&rdquo;', '&#8221;', '&#x201b;',
-           '"', '&quot;', '&#34;', '&#x22;', '&#034;',
-           '″', '&Prime;', '&#8243;', '&#x2033;',
-           '¨', '&uml;', '&#168;', '&#xa8;',
-           '„', '&bdquo;', '&#8222;', '&#x201e;',
-           '&#148;', '&#147;',
-           '˝', ' ̏', ],
+    '"': ['«', '&laquo;', '&#171;', '&#xab;',
+          '»', '&raquo;', '&#187;', '&#xbb;',
+          '“', '&ldquo;', '&#8220;', '&#x201c;',
+          '”', '&rdquo;', '&#8221;', '&#x201b;',
+          '"', '&quot;', '&#34;', '&#x22;', '&#034;',
+          '″', '&Prime;', '&#8243;', '&#x2033;',
+          '¨', '&uml;', '&#168;', '&#xa8;',
+          '„', '&bdquo;', '&#8222;', '&#x201e;',
+          '˝', ' ̏', ],
+    ' "': ['&#147;', ],
+    '" ': ['&#148;', ],
     '\'': ['′', '&prime;', '&#8242;', '&#x2032;',
            '́', '&#769;', '`',
            '´', '&acute;', '&#180;', '&#xb4;',
@@ -329,7 +331,7 @@ HEADERS = [
 
 SYSTEM_NOISE = [
     re.compile('\(\w+\)'),  # one word in (), like (iii)
-    re.compile('\(\)|\[\]|""'),  # empty brackets
+    re.compile('\(\s*?\)|\[\s*?\]|"\s*?"'),  # empty brackets
     re.compile('\[\.+\]'),  # empty brackets
     re.compile('^[#*\-:; ]+', flags=re.M), # remove list markers
 ]
