@@ -215,18 +215,14 @@ class Cleaner(object):
             f += 1
         print('Files have been cleaned')
 
-    def split(self, c=None, v=None, parts=None, stype=None):
+    def split(self, c=None, v=None, parts=None):
         """
         python run.py split wiki [-c num] [-v num] [-parts [percent, percent, ...]] [-type [a|b|c]]
         -c - count of files: it will be c files the same size
         -v - volume of filex: here will be x files with v strings in each
         -parts - split file to parts of given percentage. if sum of all percentage != 100, here will be one more file
-        -stype - source type of file to split. default 'c'
         """
-        if stype is None:
-            stype = self.ORDER[-1]
-        if stype not in self.ORDER[1:]:
-            return self.lama.help()
+        stype = self.storage_name_by_order_idx(len(self.ORDER))
         self.EXT = stype
         self.SOURCE_STORAGE = self.STORAGE.create_sub_storage(stype)
         self.TARGET_STORAGE = self.SOURCE_STORAGE.create_sub_storage('parts')
@@ -267,3 +263,4 @@ class Cleaner(object):
             parts_paths.append(path)
         data = {'source': self.source_path, 'parts': parts_paths}
         print(data)
+        return data
