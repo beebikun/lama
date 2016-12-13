@@ -26,7 +26,7 @@ class Cleaner(object):
         ('remove_bads', 'proccess_items'),     # 1 b
         ('remove_html', 'proccess_items'),     # 2 c
         ('remove_repeat', 'proccess_items'),   # 3 d
-        ('remove_noise', 'process_concated'),  # 4 g
+        ('remove_noise', 'proccess_items'),  # 4 g
         ('concat', 'concat'),                  # 5 e
         ('remove_repeat', 'process_concated'), # 6 f
     ]
