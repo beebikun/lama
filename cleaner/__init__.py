@@ -26,9 +26,9 @@ class Cleaner(object):
         ('remove_bads', 'proccess_items'),     # 1 b
         ('remove_html', 'proccess_items'),     # 2 c
         ('remove_repeat', 'proccess_items'),   # 3 d
-        ('concat', 'concat'),                  # 4 e
-        ('remove_repeat', 'process_concated'), # 5 f
-        ('remove_noise', 'process_concated'),  # 6 g
+        ('remove_noise', 'process_concated'),  # 4 g
+        ('concat', 'concat'),                  # 5 e
+        ('remove_repeat', 'process_concated'), # 6 f
     ]
 
     def __init__(self, lama):
